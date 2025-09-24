@@ -1,6 +1,6 @@
 {
   "name": "ng-draggable-modal",
-  "version": "1.0.2",
+  "version": "1.0.11",
   "description": "A powerful Angular modal library with drag, resize, and fullscreen capabilities",
   "main": "bundles/ng-draggable-modal.umd.js",
   "module": "fesm2015/ng-draggable-modal.js",

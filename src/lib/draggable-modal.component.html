@@ -6,6 +6,7 @@
     [class.resizing]="isResizing"
     [class.fullscreen]="isFullscreen"
     [class.compact]="!hasContent()"
+    [ngStyle]="config?.nzStyle"
   >
     <!-- 标题栏 -->
     <div
@@ -51,7 +52,7 @@
     <!-- 内容区域 -->
     <div #modalContent class="modal-content">
       <!-- 内容主体区域 - 仅在有内容时显示 -->
-      <div class="modal-body" *ngIf="hasContent()">
+      <div class="modal-body" *ngIf="hasContent()" [ngStyle]="config?.nzBodyStyle">
         <ng-container #dynamicComponentContainer></ng-container>
       </div>
 

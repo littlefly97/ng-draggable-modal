@@ -70,11 +70,20 @@ export interface DraggableModalRef {
   // 获取组件实例
   getContentComponent(): any;
 
+  // 组件实例 (ng-zorro兼容)
+  componentInstance?: any;
+
   // 结果Observable
   afterClose: Observable<any>;
 
+  // 打开后Observable (ng-zorro兼容)
+  afterOpen: Observable<void>;
+
   // 内部subject
   afterCloseSubject: Subject<any>;
+
+  // 内部subject (ng-zorro兼容)
+  afterOpenSubject: Subject<void>;
 }
 
 export interface ConfirmModalConfig extends Omit<DraggableModalConfig, 'nzContent'> {

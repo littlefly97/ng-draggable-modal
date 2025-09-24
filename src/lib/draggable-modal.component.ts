@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, ElementRef, ViewChild, TemplateRef, ComponentRef, ViewContainerRef, Renderer2, ComponentFactoryResolver } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, Input, Output, EventEmitter, ElementRef, ViewChild, TemplateRef, ComponentRef, ViewContainerRef, Renderer2, ComponentFactoryResolver, Injector } from '@angular/core';
 import { Subject } from 'rxjs';
 import { DraggableModalConfig, DraggableModalRef } from './draggable-modal.interface';
 import { MinimizedModalService } from './minimized-modal.service';
@@ -8,11 +8,11 @@ import { MinimizedModalService } from './minimized-modal.service';
   templateUrl: './draggable-modal.component.html',
   styleUrls: ['./draggable-modal.component.scss']
 })
-export class DraggableModalComponent implements OnInit, OnDestroy {
+export class DraggableModalComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('modalContainer', { static: true }) modalContainer: ElementRef;
   @ViewChild('modalContent', { static: true }) modalContent: ElementRef;
   @ViewChild('modalHeader', { static: true }) modalHeader: ElementRef;
-  @ViewChild('dynamicComponentContainer', { read: ViewContainerRef, static: true }) dynamicComponentContainer: ViewContainerRef;
+  @ViewChild('dynamicComponentContainer', { read: ViewContainerRef, static: false }) dynamicComponentContainer: ViewContainerRef;
 
   @Input() config: DraggableModalConfig;
   @Input() modalRef: DraggableModalRef;
@@ -36,6 +36,9 @@ export class DraggableModalComponent implements OnInit, OnDestroy {
   // 组件实例
   componentRef: ComponentRef<any>;
 
+  // 内容组件实例 (ng-zorro兼容)
+  contentComponentRef: ComponentRef<any>;
+
   // 最小化状态
   isMinimized = false;
   modalId: string;
@@ -52,8 +55,15 @@ export class DraggableModalComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    // 重置内容缓存
+    this._hasContent = null;
+
     this.initializeModal();
     this.setupEventListeners();
+  }
+
+  ngAfterViewInit() {
+    // ViewChild 现在已经可用，可以加载内容
     this.loadContent();
   }
 
@@ -63,8 +73,13 @@ export class DraggableModalComponent implements OnInit, OnDestroy {
 
     this.destroy$.next();
     this.destroy$.complete();
+
+    // 清理组件引用
     if (this.componentRef) {
       this.componentRef.destroy();
+    }
+    if (this.contentComponentRef) {
+      this.contentComponentRef.destroy();
     }
   }
 
@@ -132,8 +147,12 @@ export class DraggableModalComponent implements OnInit, OnDestroy {
   }
 
   private loadContent() {
+    console.log('loadContent called, nzContent:', this.config?.nzContent);
+    console.log('dynamicComponentContainer:', this.dynamicComponentContainer);
+
     if (this.config.nzContent) {
       if (typeof this.config.nzContent === 'string') {
+        console.log('Loading string content');
         // 如果是字符串，直接设置innerHTML
         this.renderer.setProperty(
           this.dynamicComponentContainer.element.nativeElement,
@@ -141,22 +160,75 @@ export class DraggableModalComponent implements OnInit, OnDestroy {
           this.config.nzContent
         );
       } else if (this.isTemplateRef(this.config.nzContent)) {
+        console.log('Loading template content');
         // 如果是TemplateRef
         this.dynamicComponentContainer.createEmbeddedView(this.config.nzContent);
       } else {
-        // 如果是组件类型
-        const componentFactory = this.componentFactoryResolver.resolveComponentFactory(this.config.nzContent);
-        this.componentRef = this.dynamicComponentContainer.createComponent(componentFactory);
+        console.log('Loading component content:', this.config.nzContent);
+        try {
+          // 如果是组件类型
+          console.log('Attempting to resolve component factory for:', this.config.nzContent);
+          const componentFactory = this.componentFactoryResolver.resolveComponentFactory(this.config.nzContent);
+          console.log('Component factory created:', componentFactory);
 
-        // 传递参数
-        if (this.config.nzComponentParams) {
-          Object.keys(this.config.nzComponentParams).forEach(key => {
-            if (this.componentRef.instance.hasOwnProperty(key)) {
-              this.componentRef.instance[key] = this.config.nzComponentParams[key];
+          if (!this.dynamicComponentContainer) {
+            console.error('dynamicComponentContainer is null');
+            return;
+          }
+
+          this.componentRef = this.dynamicComponentContainer.createComponent(componentFactory);
+          console.log('Component created:', this.componentRef);
+
+          // 设置 modalRef.componentInstance 为内容组件实例 (ng-zorro兼容)
+          if (this.modalRef) {
+            this.modalRef.componentInstance = this.componentRef.instance;
+            console.log('modalRef.componentInstance set');
+          }
+
+          // 保存到 contentComponentRef
+          this.contentComponentRef = this.componentRef;
+
+          // 传递参数 - 设置到组件实例
+          if (this.config.nzComponentParams) {
+            console.log('Setting component params:', this.config.nzComponentParams);
+            Object.keys(this.config.nzComponentParams).forEach(key => {
+              const value = this.config.nzComponentParams[key];
+              this.componentRef.instance[key] = value;
+              console.log(`Set ${key} =`, value);
+            });
+            console.log('Component instance after setting params:', this.componentRef.instance);
+          }
+
+          // 触发变更检测以确保组件正确渲染和初始化
+          this.componentRef.changeDetectorRef.detectChanges();
+          console.log('Change detection triggered - inputs should be available now');
+
+          // 在组件创建和参数设置完成后触发 afterOpen 事件
+          // 延迟更久确保组件完全初始化
+          setTimeout(() => {
+            if (this.modalRef && this.modalRef.afterOpenSubject) {
+              this.modalRef.afterOpenSubject.next();
+              this.modalRef.afterOpenSubject.complete();
+              console.log('afterOpen event triggered');
             }
-          });
+          }, 100);
+        } catch (error) {
+          console.error('Error creating component:', error);
         }
       }
+    } else {
+      console.log('No content to load');
+    }
+
+    // 如果不是组件类型（字符串或模板），也需要触发 afterOpen
+    if (this.config.nzContent && typeof this.config.nzContent !== 'function') {
+      setTimeout(() => {
+        if (this.modalRef && this.modalRef.afterOpenSubject) {
+          this.modalRef.afterOpenSubject.next();
+          this.modalRef.afterOpenSubject.complete();
+          console.log('afterOpen event triggered for non-component content');
+        }
+      }, 100);
     }
   }
 
@@ -417,19 +489,37 @@ export class DraggableModalComponent implements OnInit, OnDestroy {
     return '';
   }
 
+  // 缓存hasContent的结果，避免无限循环
+  private _hasContent: boolean | null = null;
+
   // 检查是否有内容需要显示
   hasContent(): boolean {
+    // 如果已经计算过，直接返回缓存结果
+    if (this._hasContent !== null) {
+      return this._hasContent;
+    }
+
     const content = this.config?.nzContent;
+    console.log('hasContent called ONCE, content:', content, 'type:', typeof content);
 
     // 检查各种空内容的情况
-    if (!content) return false;
+    if (!content) {
+      console.log('hasContent: false - no content');
+      this._hasContent = false;
+      return false;
+    }
 
     // 如果是字符串，检查是否为空或只有空白字符
     if (typeof content === 'string') {
-      return content.trim().length > 0;
+      const hasStringContent = content.trim().length > 0;
+      console.log('hasContent: string content:', hasStringContent);
+      this._hasContent = hasStringContent;
+      return hasStringContent;
     }
 
     // 如果是模板或组件，认为有内容
+    console.log('hasContent: true - template or component');
+    this._hasContent = true;
     return true;
   }
 }

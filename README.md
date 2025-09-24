@@ -152,16 +152,31 @@ this.modal.confirm({
     <div>
       <h3>Custom Content</h3>
       <p>This is a custom component inside the modal.</p>
+      <p>Message: {{ message }}</p>
     </div>
   `
 })
-export class CustomModalComponent { }
+export class CustomModalComponent {
+  message = '';
+}
 
 // Usage
-this.modal.create({
+const modalRef = this.modal.create({
   nzTitle: 'Custom Component Modal',
   nzContent: CustomModalComponent,
+  nzComponentParams: { message: 'Hello from parent!' },
   nzWidth: 800
+});
+
+// ng-zorro 兼容的事件监听
+modalRef.afterOpen.subscribe(() => {
+  console.log('Modal opened');
+  const instance = modalRef.componentInstance as CustomModalComponent;
+  instance.message = 'Modal is now open!';
+});
+
+modalRef.afterClose.subscribe(result => {
+  console.log('Modal closed with result:', result);
 });
 ```
 

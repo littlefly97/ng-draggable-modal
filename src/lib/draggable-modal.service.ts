@@ -130,6 +130,7 @@ export class DraggableModalService {
 
   private createModalRef(): DraggableModalRef {
     const afterCloseSubject = new Subject<any>();
+    const afterOpenSubject = new Subject<void>();
 
     const modalRef: DraggableModalRef = {
       close: (result?: any) => {
@@ -140,9 +141,12 @@ export class DraggableModalService {
         afterCloseSubject.next(null);
         afterCloseSubject.complete();
       },
-      getContentComponent: () => null, // 将在组件创建后设置
+      getContentComponent: () => modalRef.componentInstance, // 返回组件实例
+      componentInstance: null, // 将在组件创建后设置
       afterClose: afterCloseSubject.asObservable(),
-      afterCloseSubject
+      afterOpen: afterOpenSubject.asObservable(),
+      afterCloseSubject,
+      afterOpenSubject
     };
 
     return modalRef;
@@ -223,10 +227,15 @@ export class DraggableModalService {
     componentRef.instance.config = config;
     componentRef.instance.modalRef = modalRef;
 
+    // 设置 modalRef.componentInstance，将在modal组件的loadContent中处理
+    modalRef.componentInstance = null;
+
     // 监听关闭事件
     componentRef.instance.onClose.subscribe((result) => {
       modalRef.close(result);
     });
+
+    // afterOpen 事件将在组件的 loadContent 完成后触发
 
     return componentRef;
   }
