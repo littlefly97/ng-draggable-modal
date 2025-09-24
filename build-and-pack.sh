@@ -39,9 +39,9 @@ echo "✅ 构建完成"
 # 进入 dist 目录打包
 cd dist
 
-# 创建 tgz 包
+# 创建 tgz 包 (只打包生产文件)
 echo "📦 正在打包..."
-npm pack
+npm pack --production
 
 if [ $? -ne 0 ]; then
     echo "❌ 打包失败"
@@ -57,6 +57,10 @@ cd ..
 echo "🎉 构建完成!"
 echo "📦 包文件: $TGZ_FILE"
 echo "🏷️  版本: $NEW_VERSION"
+echo "🎯 兼容性: Angular 10-16, RxJS 6-7"
 echo ""
 echo "你可以使用以下命令安装本地包:"
 echo "npm install ./$TGZ_FILE"
+echo ""
+echo "发布到 npm:"
+echo "npm publish ./$TGZ_FILE --access public"

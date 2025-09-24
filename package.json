@@ -1,6 +1,6 @@
 {
   "name": "ng-draggable-modal",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A powerful Angular modal library with drag, resize, and fullscreen capabilities",
   "main": "bundles/ng-draggable-modal.umd.js",
   "module": "fesm2015/ng-draggable-modal.js",
@@ -36,9 +36,9 @@
     "url": "https://github.com/littlefly/ng-draggable-modal/issues"
   },
   "peerDependencies": {
-    "@angular/common": ">=10.0.0",
-    "@angular/core": ">=10.0.0",
-    "rxjs": ">=6.0.0"
+    "@angular/common": ">=10.0.0 <17.0.0",
+    "@angular/core": ">=10.0.0 <17.0.0",
+    "rxjs": ">=6.0.0 <8.0.0"
   },
   "devDependencies": {
     "@angular/common": "~10.2.3",

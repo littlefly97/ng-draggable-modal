@@ -2,15 +2,16 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist/out-tsc",
-    "target": "ES2015",
-    "module": "ES2015",
+    "target": "ES2017",
+    "module": "ES2020",
     "moduleResolution": "node",
     "declaration": true,
-    "declarationMap": true,
-    "inlineSources": true,
+    "declarationMap": false,
+    "inlineSources": false,
+    "sourceMap": false,
     "types": [],
     "lib": [
-      "ES2015",
+      "ES2017",
       "dom"
     ]
   },

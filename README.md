@@ -1,6 +1,21 @@
-# NgDraggableModal
+# ng-draggable-modal
 
 A powerful Angular modal library with drag, resize, and fullscreen capabilities.
+
+## Version Compatibility
+
+| Angular Version | ng-draggable-modal | Status |
+|----------------|--------------------|---------|
+| 10.x           | ✅ 1.0.x+         | Supported |
+| 11.x           | ✅ 1.0.x+         | Supported |
+| 12.x           | ✅ 1.0.x+         | Supported |
+| 13.x           | ✅ 1.0.x+         | Supported |
+| 14.x           | ✅ 1.0.x+         | Supported |
+| 15.x           | ✅ 1.0.x+         | Supported |
+| 16.x           | ✅ 1.0.x+         | Supported |
+
+- **RxJS**: Supports versions 6.x and 7.x
+- **TypeScript**: Compatible with versions used by corresponding Angular versions
 
 ## Features
 
