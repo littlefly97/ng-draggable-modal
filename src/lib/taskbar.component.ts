@@ -4,7 +4,7 @@ import { takeUntil } from 'rxjs/operators';
 import { MinimizedModalService, MinimizedModal } from './minimized-modal.service';
 
 @Component({
-  selector: 'app-modal-taskbar',
+  selector: 'ng-modal-taskbar',
   template: `
     <div class="modal-taskbar" *ngIf="minimizedModals.length > 0">
       <div class="taskbar-title">最小化窗口</div>
@@ -144,9 +144,11 @@ export class TaskbarComponent implements OnInit, OnDestroy {
   constructor(private minimizedModalService: MinimizedModalService) {}
 
   ngOnInit() {
+    console.log('TaskbarComponent initialized');
     this.minimizedModalService.getMinimizedModals()
       .pipe(takeUntil(this.destroy$))
       .subscribe(modals => {
+        console.log('TaskbarComponent received modals:', modals);
         this.minimizedModals = modals;
       });
   }

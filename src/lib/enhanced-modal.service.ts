@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { DraggableModalService } from './draggable-modal.service';
 import { DraggableModalConfig, DraggableModalRef, ConfirmModalConfig } from './draggable-modal.interface';
 
@@ -13,11 +14,27 @@ export class EnhancedModalService {
 
   constructor(private draggableModalService: DraggableModalService) {}
 
+  // === ng-zorro 兼容属性 ===
+
+  /**
+   * 当前打开的所有 Modal 引用列表
+   */
+  get openModals(): DraggableModalRef[] {
+    return this.draggableModalService.getOpenModals();
+  }
+
+  /**
+   * 所有 Modal 完全关闭后的回调
+   */
+  get afterAllClose(): Observable<void> {
+    return this.draggableModalService.afterAllClose();
+  }
+
   /**
    * 创建模态框
    * 完全兼容 NzModalService.create() 的API
    */
-  create<T>(config: DraggableModalConfig): DraggableModalRef {
+  create(config: DraggableModalConfig): DraggableModalRef {
     return this.draggableModalService.create(config);
   }
 

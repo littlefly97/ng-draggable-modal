@@ -1,4 +1,10 @@
-<div class="draggable-modal-mask" [class.fullscreen]="isFullscreen">
+<div
+  class="draggable-modal-mask"
+  [class.fullscreen]="isFullscreen"
+  [class.hidden]="!showMask()"
+  [ngStyle]="getMaskStyle()"
+  [style.z-index]="getZIndex()"
+>
   <div
     #modalContainer
     class="draggable-modal-container"
@@ -6,7 +12,10 @@
     [class.resizing]="isResizing"
     [class.fullscreen]="isFullscreen"
     [class.compact]="!hasContent()"
+    [class]="config?.nzClassName || ''"
+    [ngClass]="getWrapClassName()"
     [ngStyle]="config?.nzStyle"
+    [attr.dir]="getDirection()"
   >
     <!-- 标题栏 -->
     <div
@@ -21,14 +30,15 @@
         [innerHTML]="config?.nzTitle || '提示'">
       </div>
       <div class="modal-controls">
-        <!-- <button
+        <button
           type="button"
           class="control-btn minimize-btn"
           (click)="minimize()"
           title="最小化"
+          *ngIf="showMinimizeButton()"
         >
           <i class="icon-minimize">−</i>
-        </button> -->
+        </button>
         <button
           type="button"
           class="control-btn fullscreen-btn"
@@ -43,8 +53,14 @@
           class="control-btn close-btn"
           (click)="close()"
           title="关闭"
+          *ngIf="isClosable()"
         >
-          <i class="icon-close">×</i>
+          <ng-container *ngIf="config?.nzCloseIcon; else defaultCloseIcon">
+            <ng-container *ngTemplateOutlet="config.nzCloseIcon"></ng-container>
+          </ng-container>
+          <ng-template #defaultCloseIcon>
+            <i class="icon-close">×</i>
+          </ng-template>
         </button>
       </div>
     </div>
@@ -61,26 +77,48 @@
 
       <!-- 底部按钮区域 -->
       <div class="modal-footer" *ngIf="config?.nzFooter !== null">
-        <ng-container *ngIf="config?.nzFooter; else defaultFooter">
-          <ng-container *ngTemplateOutlet="config.nzFooter"></ng-container>
+        <!-- 自定义按钮数组 -->
+        <ng-container *ngIf="isModalButtonArray(config?.nzFooter); else templateOrDefaultFooter">
+          <button
+            *ngFor="let button of config.nzFooter; trackBy: trackByButtonLabel"
+            type="button"
+            [class]="getButtonClass(button)"
+            [disabled]="getButtonDisabled(button)"
+            [style.display]="getButtonShow(button) ? 'inline-block' : 'none'"
+            (click)="onCustomButtonClick(button)"
+          >
+            <span *ngIf="getButtonLoading(button)" class="loading-icon">⌛</span>
+            {{ button.label }}
+          </button>
         </ng-container>
-        <ng-template #defaultFooter>
-          <button
-            type="button"
-            class="btn btn-default"
-            (click)="cancel()"
-            *ngIf="config?.nzCancelText !== null"
-          >
-            {{ config?.nzCancelText || '取消' }}
-          </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            (click)="confirm()"
-            *ngIf="config?.nzOkText !== null"
-          >
-            {{ config?.nzOkText || '确定' }}
-          </button>
+
+        <!-- 模板或默认按钮 -->
+        <ng-template #templateOrDefaultFooter>
+          <ng-container *ngIf="config?.nzFooter; else defaultFooter">
+            <ng-container *ngTemplateOutlet="config.nzFooter"></ng-container>
+          </ng-container>
+          <ng-template #defaultFooter>
+            <button
+              type="button"
+              class="btn btn-default"
+              (click)="cancel()"
+              [disabled]="config?.nzCancelDisabled || config?.nzCancelLoading"
+              *ngIf="config?.nzCancelText !== null"
+            >
+              <span *ngIf="config?.nzCancelLoading" class="loading-icon">⌛</span>
+              {{ config?.nzCancelText || '取消' }}
+            </button>
+            <button
+              type="button"
+              [class]="getOkButtonClass()"
+              (click)="confirm()"
+              [disabled]="config?.nzOkDisabled || config?.nzOkLoading"
+              *ngIf="config?.nzOkText !== null"
+            >
+              <span *ngIf="config?.nzOkLoading" class="loading-icon">⌛</span>
+              {{ config?.nzOkText || '确定' }}
+            </button>
+          </ng-template>
         </ng-template>
       </div>
     </div>

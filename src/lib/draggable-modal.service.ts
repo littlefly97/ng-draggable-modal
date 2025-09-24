@@ -104,6 +104,31 @@ export class DraggableModalService {
     return this.openModals.length;
   }
 
+  /**
+   * 获取当前打开的所有模态框引用 - ng-zorro兼容
+   */
+  getOpenModals(): DraggableModalRef[] {
+    return [...this.openModals];
+  }
+
+  /**
+   * 所有模态框完全关闭后的回调 - ng-zorro兼容
+   */
+  afterAllClose(): Observable<void> {
+    return new Observable(observer => {
+      const checkAllClosed = () => {
+        if (this.openModals.length === 0) {
+          observer.next();
+          observer.complete();
+        } else {
+          // 等待下一个事件循环再检查
+          setTimeout(checkAllClosed, 0);
+        }
+      };
+      checkAllClosed();
+    });
+  }
+
   private createModal(config: DraggableModalConfig, type: ModalType): DraggableModalRef {
     // 创建模态框引用
     const modalRef = this.createModalRef();
@@ -137,16 +162,37 @@ export class DraggableModalService {
         afterCloseSubject.next(result);
         afterCloseSubject.complete();
       },
-      destroy: () => {
-        afterCloseSubject.next(null);
+      destroy: (result?: any) => {
+        afterCloseSubject.next(result);
         afterCloseSubject.complete();
       },
-      getContentComponent: () => modalRef.componentInstance, // 返回组件实例
-      componentInstance: null, // 将在组件创建后设置
+      getContentComponent: () => modalRef.componentInstance,
+      getContentComponentRef: () => modalRef._componentRef,
+      triggerOk: () => {
+        if (modalRef._modalComponent) {
+          modalRef._modalComponent.confirm();
+        }
+      },
+      triggerCancel: () => {
+        if (modalRef._modalComponent) {
+          modalRef._modalComponent.cancel();
+        }
+      },
+      updateConfig: (config: Partial<DraggableModalConfig>) => {
+        if (modalRef._modalComponent && modalRef._setConfig) {
+          const newConfig = { ...modalRef._modalComponent.config, ...config };
+          modalRef._setConfig(newConfig);
+          modalRef._modalComponent.config = newConfig;
+        }
+      },
+      componentInstance: null,
       afterClose: afterCloseSubject.asObservable(),
       afterOpen: afterOpenSubject.asObservable(),
       afterCloseSubject,
-      afterOpenSubject
+      afterOpenSubject,
+      // 内部属性，用于存储组件引用
+      _modalComponent: null,
+      _componentRef: null
     };
 
     return modalRef;
@@ -157,10 +203,10 @@ export class DraggableModalService {
       draggable: true,
       resizable: true,
       showFullscreenButton: true,
-      showMinimizeButton: true,
+      showMinimizeButton: false,
       nzMaskClosable: true,
       defaultFullscreen: false,
-      zIndex: 1000,
+      nzZIndex: 1000,
       nzWidth: config.nzWidth || this.calculateOptimalWidth(config),
       ...config
     };
@@ -227,8 +273,14 @@ export class DraggableModalService {
     componentRef.instance.config = config;
     componentRef.instance.modalRef = modalRef;
 
-    // 设置 modalRef.componentInstance，将在modal组件的loadContent中处理
-    modalRef.componentInstance = null;
+    // 设置内部组件引用
+    modalRef._modalComponent = componentRef.instance;
+    modalRef._componentRef = componentRef;
+
+    // 设置配置更新回调
+    modalRef._setConfig = (config: DraggableModalConfig) => {
+      componentRef.instance.config = config;
+    };
 
     // 监听关闭事件
     componentRef.instance.onClose.subscribe((result) => {

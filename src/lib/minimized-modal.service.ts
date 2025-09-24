@@ -22,8 +22,10 @@ export class MinimizedModalService {
 
   // 添加最小化的模态框
   addMinimizedModal(modal: MinimizedModal) {
+    console.log('MinimizedModalService: Adding modal to minimized list:', modal);
     this.minimizedModals.push(modal);
     this.minimizedModals$.next([...this.minimizedModals]);
+    console.log('MinimizedModalService: Current minimized count:', this.minimizedModals.length);
   }
 
   // 还原模态框

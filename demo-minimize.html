@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>最小化功能演示</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .demo-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .demo-section h3 { margin-top: 0; color: #333; }
+        .code { background: #f5f5f5; padding: 10px; border-radius: 3px; font-family: monospace; }
+        .steps { background: #e8f4f8; padding: 15px; border-radius: 5px; border-left: 4px solid #1890ff; }
+        .warning { background: #fff2e8; padding: 15px; border-radius: 5px; border-left: 4px solid #fa8c16; }
+    </style>
+</head>
+<body>
+    <h1>🎭 ng-draggable-modal 最小化功能演示</h1>
+
+    <div class="demo-section">
+        <h3>📋 设置步骤</h3>
+        <div class="steps">
+            <h4>1. 在 app.component.html 中添加任务栏组件：</h4>
+            <div class="code">
+&lt;router-outlet&gt;&lt;/router-outlet&gt;<br>
+&lt;!-- 必须添加这一行，否则最小化的模态框无法恢复 --&gt;<br>
+&lt;<strong>ng-modal-taskbar</strong>&gt;&lt;/ng-modal-taskbar&gt;
+            </div>
+
+            <h4>2. 在模态框配置中启用最小化按钮：</h4>
+            <div class="code">
+const modalRef = this.modal.create({<br>
+&nbsp;&nbsp;nzTitle: '可最小化的模态框',<br>
+&nbsp;&nbsp;nzContent: '这个模态框可以最小化',<br>
+&nbsp;&nbsp;<strong>showMinimizeButton: true</strong> // 必须显式启用 (默认: false)<br>
+});
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h3>🎯 最小化功能说明</h3>
+        <ul>
+            <li><strong>最小化按钮</strong>：点击标题栏中的 "−" 按钮</li>
+            <li><strong>任务栏显示</strong>：最小化后会在屏幕底部显示任务栏</li>
+            <li><strong>还原模态框</strong>：点击任务栏中的模态框标题</li>
+            <li><strong>直接关闭</strong>：点击任务栏项目中的 "×" 按钮</li>
+            <li><strong>自动隐藏</strong>：没有最小化模态框时任务栏自动隐藏</li>
+        </ul>
+    </div>
+
+    <div class="demo-section">
+        <h3>🎨 任务栏特性</h3>
+        <ul>
+            <li><strong>位置</strong>：固定在屏幕底部</li>
+            <li><strong>样式</strong>：半透明背景，毛玻璃效果</li>
+            <li><strong>标题截断</strong>：长标题自动截断并显示省略号</li>
+            <li><strong>悬停提示</strong>：显示完整标题和最小化时间</li>
+            <li><strong>响应式</strong>：移动设备上自动调整</li>
+        </ul>
+    </div>
+
+    <div class="warning">
+        <h4>⚠️ 重要提醒</h4>
+        <p><strong>如果你遇到问题：</strong></p>
+        <ol>
+            <li><strong>最小化按钮不显示</strong>: 确保设置了 <code>showMinimizeButton: true</code> (默认为 false)</li>
+            <li><strong>没有任务栏</strong>: 确保已在模板中添加 <code>&lt;ng-modal-taskbar&gt;&lt;/ng-modal-taskbar&gt;</code></li>
+            <li>确保使用的是最新版本 (v1.0.13+)</li>
+            <li>检查浏览器控制台是否有错误</li>
+            <li>确认 NgDraggableModalModule 已正确导入</li>
+        </ol>
+    </div>
+
+    <div class="demo-section">
+        <h3>💻 完整代码示例</h3>
+
+        <h4>app.component.html:</h4>
+        <div class="code">
+&lt;div class="app-container"&gt;<br>
+&nbsp;&nbsp;&lt;h1&gt;我的应用&lt;/h1&gt;<br>
+&nbsp;&nbsp;&lt;button (click)="openMinimizableModal()"&gt;打开可最小化模态框&lt;/button&gt;<br>
+&nbsp;&nbsp;&lt;router-outlet&gt;&lt;/router-outlet&gt;<br>
+&lt;/div&gt;<br>
+<br>
+&lt;!-- 任务栏组件 - 必须添加 --&gt;<br>
+&lt;<strong>ng-modal-taskbar</strong>&gt;&lt;/ng-modal-taskbar&gt;
+        </div>
+
+        <h4>app.component.ts:</h4>
+        <div class="code">
+import { Component } from '@angular/core';<br>
+import { EnhancedModalService } from 'ng-draggable-modal';<br>
+<br>
+@Component({<br>
+&nbsp;&nbsp;selector: 'app-root',<br>
+&nbsp;&nbsp;templateUrl: './app.component.html'<br>
+})<br>
+export class AppComponent {<br>
+&nbsp;&nbsp;constructor(private modal: EnhancedModalService) {}<br>
+<br>
+&nbsp;&nbsp;openMinimizableModal() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;const modalRef = this.modal.create({<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nzTitle: '可最小化的模态框',<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nzContent: '点击标题栏的 "−" 按钮来最小化这个模态框',<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nzWidth: 600,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>showMinimizeButton: true</strong>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;draggable: true,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resizable: true,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;showFullscreenButton: true<br>
+&nbsp;&nbsp;&nbsp;&nbsp;});<br>
+&nbsp;&nbsp;}<br>
+}
+        </div>
+
+        <h4>app.module.ts:</h4>
+        <div class="code">
+import { NgModule } from '@angular/core';<br>
+import { BrowserModule } from '@angular/platform-browser';<br>
+import { <strong>NgDraggableModalModule</strong> } from 'ng-draggable-modal';<br>
+<br>
+import { AppComponent } from './app.component';<br>
+<br>
+@NgModule({<br>
+&nbsp;&nbsp;declarations: [AppComponent],<br>
+&nbsp;&nbsp;imports: [<br>
+&nbsp;&nbsp;&nbsp;&nbsp;BrowserModule,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<strong>NgDraggableModalModule</strong><br>
+&nbsp;&nbsp;],<br>
+&nbsp;&nbsp;providers: [],<br>
+&nbsp;&nbsp;bootstrap: [AppComponent]<br>
+})<br>
+export class AppModule { }
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h3>🔧 程序化控制</h3>
+        <div class="code">
+// 获取模态框引用<br>
+const modalRef = this.modal.create({ ... });<br>
+<br>
+// 最小化模态框<br>
+modalRef._modalComponent?.minimize();<br>
+<br>
+// 还原模态框<br>
+modalRef._modalComponent?.restore();<br>
+<br>
+// 关闭模态框<br>
+modalRef.close();
+        </div>
+    </div>
+
+</body>
+</html>

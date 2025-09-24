@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, Input, Output, EventEmitter, ElementRef, ViewChild, TemplateRef, ComponentRef, ViewContainerRef, Renderer2, ComponentFactoryResolver, Injector } from '@angular/core';
 import { Subject } from 'rxjs';
-import { DraggableModalConfig, DraggableModalRef } from './draggable-modal.interface';
+import { DraggableModalConfig, DraggableModalRef, ModalButtonOptions } from './draggable-modal.interface';
 import { MinimizedModalService } from './minimized-modal.service';
 
 @Component({
@@ -104,11 +104,31 @@ export class DraggableModalComponent implements OnInit, AfterViewInit, OnDestroy
       this.size.height = this.calculateMinimalHeight();
     }
 
+    // 设置初始位置
+    if (this.config.initialPosition) {
+      this.position = { ...this.config.initialPosition };
+    } else if (this.config.nzCentered !== false) {
+      // 默认居中显示，除非明确设置为false
+      this.centerModal();
+    }
+
+    // 设置初始大小
+    if (this.config.initialSize) {
+      this.size = { ...this.config.initialSize };
+    }
+
+    // 设置默认全屏
+    if (this.config.defaultFullscreen) {
+      this.isFullscreen = true;
+      this.updateFullscreenSize();
+    }
+
     // 设置标题显示样式
     this.setTitleDisplayStyle();
 
-    // 居中显示
-    this.centerModal();
+    // 设置键盘事件监听
+    this.setupKeyboardListeners();
+
     this.updateModalPosition();
     this.updateModalSize();
   }
@@ -243,6 +263,26 @@ export class DraggableModalComponent implements OnInit, AfterViewInit, OnDestroy
 
     // 监听窗口大小变化
     this.renderer.listen('window', 'resize', () => this.onWindowResize());
+
+    // 监听遮罩点击事件
+    if (this.isMaskClosable()) {
+      this.renderer.listen(this.modalContainer.nativeElement.parentElement, 'click', (event) => {
+        if (event.target === event.currentTarget) {
+          this.close();
+        }
+      });
+    }
+  }
+
+  private setupKeyboardListeners() {
+    // 监听ESC键关闭
+    if (this.config.nzKeyboard !== false) {
+      this.renderer.listen('document', 'keydown', (event: KeyboardEvent) => {
+        if (event.key === 'Escape') {
+          this.close();
+        }
+      });
+    }
   }
 
   // 检查是否可拖拽
@@ -258,6 +298,170 @@ export class DraggableModalComponent implements OnInit, AfterViewInit, OnDestroy
   // 检查是否显示全屏按钮
   showFullscreenButton(): boolean {
     return this.config?.showFullscreenButton !== false; // 默认为true
+  }
+
+  // 检查是否显示关闭按钮
+  isClosable(): boolean {
+    return this.config?.nzClosable !== false; // 默认为true
+  }
+
+  // 检查是否显示遮罩
+  showMask(): boolean {
+    return this.config?.nzMask !== false; // 默认为true
+  }
+
+  // 检查点击遮罩是否可关闭
+  isMaskClosable(): boolean {
+    return this.config?.nzMaskClosable !== false; // 默认为true
+  }
+
+  // 检查是否显示最小化按钮
+  showMinimizeButton(): boolean {
+    return this.config?.showMinimizeButton === true; // 默认为false
+  }
+
+  // 获取遮罩样式
+  getMaskStyle(): { [key: string]: string } {
+    return this.config?.nzMaskStyle || {};
+  }
+
+  // 获取外层容器样式
+  getWrapClassName(): string {
+    return this.config?.nzWrapClassName || '';
+  }
+
+  // 获取z-index
+  getZIndex(): number {
+    return this.config?.nzZIndex || 1000;
+  }
+
+  // 获取方向
+  getDirection(): string {
+    return this.config?.nzDirection || 'ltr';
+  }
+
+  // 检查是否是按钮数组
+  isModalButtonArray(footer: any): footer is ModalButtonOptions[] {
+    return Array.isArray(footer) && footer.length > 0 && typeof footer[0] === 'object' && 'label' in footer[0];
+  }
+
+  // 获取按钮样式类
+  getButtonClass(button: ModalButtonOptions): string {
+    let baseClass = 'btn';
+
+    // 根据type设置样式
+    switch (button.type || 'default') {
+      case 'primary':
+        baseClass += ' btn-primary';
+        break;
+      case 'danger':
+        baseClass += button.danger ? ' btn-danger' : ' btn-default';
+        break;
+      case 'dashed':
+        baseClass += ' btn-dashed';
+        break;
+      case 'link':
+        baseClass += ' btn-link';
+        break;
+      case 'text':
+        baseClass += ' btn-text';
+        break;
+      default:
+        baseClass += ' btn-default';
+    }
+
+    // 添加其他样式
+    if (button.ghost) baseClass += ' btn-ghost';
+    if (button.shape === 'circle') baseClass += ' btn-circle';
+    if (button.shape === 'round') baseClass += ' btn-round';
+    if (button.size) baseClass += ` btn-${button.size}`;
+
+    return baseClass;
+  }
+
+  // 获取确定按钮样式类
+  getOkButtonClass(): string {
+    let baseClass = 'btn';
+
+    switch (this.config?.nzOkType || 'primary') {
+      case 'primary':
+        baseClass += ' btn-primary';
+        break;
+      case 'danger':
+        baseClass += this.config?.nzOkDanger ? ' btn-danger' : ' btn-default';
+        break;
+      case 'dashed':
+        baseClass += ' btn-dashed';
+        break;
+      case 'link':
+        baseClass += ' btn-link';
+        break;
+      case 'text':
+        baseClass += ' btn-text';
+        break;
+      default:
+        baseClass += ' btn-default';
+    }
+
+    return baseClass;
+  }
+
+  // 获取按钮禁用状态
+  getButtonDisabled(button: ModalButtonOptions): boolean {
+    if (typeof button.disabled === 'function') {
+      return button.disabled.call(button, this.modalRef?.componentInstance);
+    }
+    return button.disabled || false;
+  }
+
+  // 获取按钮显示状态
+  getButtonShow(button: ModalButtonOptions): boolean {
+    if (typeof button.show === 'function') {
+      return button.show.call(button, this.modalRef?.componentInstance);
+    }
+    return button.show !== false; // 默认显示
+  }
+
+  // 获取按钮加载状态
+  getButtonLoading(button: ModalButtonOptions): boolean {
+    if (typeof button.loading === 'function') {
+      return button.loading.call(button, this.modalRef?.componentInstance);
+    }
+    return button.loading || false;
+  }
+
+  // 自定义按钮点击事件
+  async onCustomButtonClick(button: ModalButtonOptions): Promise<void> {
+    if (this.getButtonDisabled(button) || this.getButtonLoading(button)) {
+      return;
+    }
+
+    if (button.onClick) {
+      try {
+        // 如果设置了autoLoading，自动显示加载状态
+        if (button.autoLoading) {
+          button.loading = true;
+        }
+
+        const result = await button.onClick.call(button, this.modalRef?.componentInstance);
+
+        // 如果onClick返回false，不关闭对话框
+        if (result !== false) {
+          this.close(result);
+        }
+      } catch (error) {
+        console.error('Button click handler error:', error);
+      } finally {
+        if (button.autoLoading) {
+          button.loading = false;
+        }
+      }
+    }
+  }
+
+  // 用于trackBy的方法
+  trackByButtonLabel(index: number, button: ModalButtonOptions): string {
+    return button.label + index;
   }
 
   // 开始拖拽
@@ -421,22 +625,41 @@ export class DraggableModalComponent implements OnInit, AfterViewInit, OnDestroy
 
   // 最小化
   minimize() {
+    console.log('DraggableModalComponent: minimize() called for modal:', this.modalId);
     this.isMinimized = true;
-    this.renderer.setStyle(this.modalContainer.nativeElement, 'display', 'none');
+
+    // 隐藏整个模态框（包括遮罩）
+    const maskElement = this.modalContainer.nativeElement.parentElement;
+    if (maskElement) {
+      this.renderer.addClass(maskElement, 'minimized');
+      this.renderer.setStyle(maskElement, 'display', 'none');
+      console.log('DraggableModalComponent: Hidden mask element');
+    }
 
     // 添加到最小化列表
     const title = typeof this.config.nzTitle === 'string' ? this.config.nzTitle : '未命名窗口';
-    this.minimizedModalService.addMinimizedModal({
+    const minimizedModal = {
       id: this.modalId,
       title: title,
       modalRef: this,
       minimizedAt: new Date()
-    });
+    };
+    console.log('DraggableModalComponent: Adding to minimized service:', minimizedModal);
+    this.minimizedModalService.addMinimizedModal(minimizedModal);
   }
 
   // 还原
   restore() {
     this.isMinimized = false;
+
+    // 显示整个模态框（包括遮罩）
+    const maskElement = this.modalContainer.nativeElement.parentElement;
+    if (maskElement) {
+      this.renderer.removeClass(maskElement, 'minimized');
+      this.renderer.setStyle(maskElement, 'display', 'flex');
+    }
+
+    // 确保模态框容器也是可见的
     this.renderer.setStyle(this.modalContainer.nativeElement, 'display', 'flex');
 
     // 从最小化列表中移除
