@@ -527,6 +527,6 @@ npm run build
 
 ## 🔗 Links
 
-- [GitHub Repository](https://github.com/littlefly/ng-draggable-modal)
+- [GitHub Repository](https://github.com/littlefly97/ng-draggable-modal)
 - [NPM Package](https://www.npmjs.com/package/ng-draggable-modal)
-- [Issues & Bug Reports](https://github.com/littlefly/ng-draggable-modal/issues)
+- [Issues & Bug Reports](https://github.com/littlefly97/ng-draggable-modal/issues)
