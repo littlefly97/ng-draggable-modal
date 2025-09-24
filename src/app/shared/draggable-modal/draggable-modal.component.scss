@@ -1,0 +1,401 @@
+.draggable-modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.fullscreen {
+    background: none;
+  }
+}
+
+.draggable-modal-container {
+  position: absolute;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  min-width: 300px;
+  min-height: auto; // 改为自动最小高度
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+
+  &.dragging {
+    user-select: none;
+    .modal-header {
+      cursor: grabbing;
+    }
+  }
+
+  &.resizing {
+    user-select: none;
+  }
+
+  &.fullscreen {
+    border-radius: 0;
+    box-shadow: none;
+    .modal-header {
+      cursor: default;
+    }
+  }
+}
+
+.modal-header {
+  background: #f5f5f5;
+  border-bottom: 1px solid #e8e8e8;
+  padding: 12px 16px;
+  display: flex;
+  align-items: flex-start; // 改为顶部对齐，支持多行标题
+  justify-content: space-between;
+  cursor: grab;
+  min-height: 54px; // 改为最小高度
+  max-height: 80px; // 设置最大高度
+  box-sizing: border-box;
+
+  &.no-drag {
+    cursor: default;
+  }
+
+  .modal-title {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.85);
+    margin-right: 16px;
+    line-height: 1.4;
+    word-break: break-word;
+    max-height: 56px; // 允许最多2行显示
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+
+    // 如果标题较短，保持单行显示
+    &.single-line {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      -webkit-line-clamp: unset;
+      display: block;
+      max-height: none;
+    }
+  }
+
+  .modal-controls {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0; // 防止控制按钮被压缩
+    align-self: flex-start; // 确保按钮在顶部对齐
+    margin-top: 2px; // 微调位置
+  }
+
+  .control-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.45);
+    transition: all 0.2s;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.06);
+      color: rgba(0, 0, 0, 0.85);
+    }
+
+    &.close-btn:hover {
+      background: #ff4d4f;
+      color: white;
+    }
+
+    .icon-minimize {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .icon-fullscreen {
+      font-size: 14px;
+      line-height: 1;
+
+      &.restore {
+        font-size: 12px;
+      }
+    }
+
+    .icon-close {
+      font-size: 18px;
+      line-height: 1;
+    }
+  }
+}
+
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0; // 允许内容区域收缩到0高度
+  flex: 0 1 auto; // 不强制填充剩余空间，根据内容调整
+
+  // 全屏模式下的特殊处理
+  .draggable-modal-container.fullscreen & {
+    flex: 1; // 全屏时填充剩余空间
+    height: 100%;
+  }
+}
+
+.modal-body {
+  padding: 16px;
+  overflow: auto;
+  position: relative;
+  flex: 0 1 auto; // 根据内容自适应高度
+
+  // 全屏模式下的特殊处理
+  .draggable-modal-container.fullscreen & {
+    flex: 1; // 全屏时填充剩余空间
+    min-height: 0;
+  }
+}
+
+// 全屏模式下无内容时的填充区域
+.modal-body-spacer {
+  flex: 1; // 填充剩余空间
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(0, 0, 0, 0.25);
+  font-size: 14px;
+
+  // 可以添加一些提示信息或者保持空白
+  &::before {
+    content: '';
+    // content: ''; // 保持空白，或者可以添加提示文字
+  }
+}
+
+.modal-footer {
+  border-top: 1px solid #e8e8e8;
+  padding: 12px 16px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  background: #fafafa;
+  flex-shrink: 0; // 底部按钮区域不收缩
+
+  .btn {
+    padding: 6px 15px;
+    border-radius: 4px;
+    border: 1px solid #d9d9d9;
+    background: white;
+    color: rgba(0, 0, 0, 0.85);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+
+    &:hover {
+      border-color: #40a9ff;
+      color: #40a9ff;
+    }
+
+    &.btn-primary {
+      background: #1890ff;
+      border-color: #1890ff;
+      color: white;
+
+      &:hover {
+        background: #40a9ff;
+        border-color: #40a9ff;
+      }
+    }
+  }
+}
+
+// 调整大小的拖拽点
+.resize-handle {
+  position: absolute;
+  background: transparent;
+  z-index: 10;
+
+  &.resize-handle-top {
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 6px;
+    cursor: ns-resize;
+  }
+
+  &.resize-handle-right {
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    cursor: ew-resize;
+  }
+
+  &.resize-handle-bottom {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 6px;
+    cursor: ns-resize;
+  }
+
+  &.resize-handle-left {
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    cursor: ew-resize;
+  }
+
+  // 四个角的调整点
+  &.resize-handle-corner-ne {
+    right: 0;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    cursor: ne-resize;
+  }
+
+  &.resize-handle-corner-nw {
+    left: 0;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    cursor: nw-resize;
+  }
+
+  &.resize-handle-corner-se {
+    right: 0;
+    bottom: 0;
+    width: 12px;
+    height: 12px;
+    cursor: se-resize;
+
+    &::after {
+      content: '';
+      position: absolute;
+      right: 2px;
+      bottom: 2px;
+      width: 8px;
+      height: 8px;
+      background: linear-gradient(
+        135deg,
+        transparent 30%,
+        rgba(0, 0, 0, 0.2) 30%,
+        rgba(0, 0, 0, 0.2) 70%,
+        transparent 70%
+      );
+    }
+  }
+
+  &.resize-handle-corner-sw {
+    left: 0;
+    bottom: 0;
+    width: 12px;
+    height: 12px;
+    cursor: sw-resize;
+  }
+}
+
+// 动画效果
+.draggable-modal-container {
+  animation: modalEnter 0.2s ease-out;
+}
+
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// 确认对话框样式
+.confirm-modal {
+  .modal-body {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-height: 60px; // 减少最小高度
+
+    .confirm-icon {
+      font-size: 22px;
+      margin-top: 2px;
+
+      &.question {
+        color: #faad14;
+      }
+
+      &.info {
+        color: #1890ff;
+      }
+
+      &.success {
+        color: #52c41a;
+      }
+
+      &.warning {
+        color: #faad14;
+      }
+
+      &.error {
+        color: #ff4d4f;
+      }
+    }
+
+    .confirm-content {
+      flex: 1;
+
+      .confirm-title {
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 8px;
+        color: rgba(0, 0, 0, 0.85);
+      }
+
+      .confirm-message {
+        font-size: 14px;
+        color: rgba(0, 0, 0, 0.65);
+        line-height: 1.5;
+      }
+    }
+  }
+}
+
+// 仅有按钮无内容时的紧凑样式
+.draggable-modal-container.compact {
+  .modal-content {
+    min-height: auto;
+  }
+
+  .modal-footer {
+    border-top: none;
+    padding-top: 8px;
+    margin-top: 0;
+
+    // 在紧凑模式下减少底部边距
+    .btn {
+      margin-bottom: 0;
+    }
+  }
+
+  // 紧凑模式下减少标题栏的内边距
+  .modal-header {
+    padding-bottom: 8px;
+  }
+}

@@ -1,0 +1,129 @@
+<div class="draggable-modal-mask" [class.fullscreen]="isFullscreen">
+  <div
+    #modalContainer
+    class="draggable-modal-container"
+    [class.dragging]="isDragging"
+    [class.resizing]="isResizing"
+    [class.fullscreen]="isFullscreen"
+    [class.compact]="!hasContent()"
+  >
+    <!-- 标题栏 -->
+    <div
+      #modalHeader
+      class="modal-header"
+      (mousedown)="isDraggable() ? onDragStart($event) : null"
+      [class.no-drag]="isFullscreen || !isDraggable()"
+    >
+      <div
+        class="modal-title"
+        [title]="getTitleTooltip()"
+        [innerHTML]="config?.nzTitle || '提示'">
+      </div>
+      <div class="modal-controls">
+        <!-- <button
+          type="button"
+          class="control-btn minimize-btn"
+          (click)="minimize()"
+          title="最小化"
+        >
+          <i class="icon-minimize">−</i>
+        </button> -->
+        <button
+          type="button"
+          class="control-btn fullscreen-btn"
+          (click)="toggleFullscreen()"
+          [title]="isFullscreen ? '还原' : '全屏'"
+          *ngIf="showFullscreenButton()"
+        >
+          <i class="icon-fullscreen" [class.restore]="isFullscreen">{{ isFullscreen ? '⧉' : '□' }}</i>
+        </button>
+        <button
+          type="button"
+          class="control-btn close-btn"
+          (click)="close()"
+          title="关闭"
+        >
+          <i class="icon-close">×</i>
+        </button>
+      </div>
+    </div>
+
+    <!-- 内容区域 -->
+    <div #modalContent class="modal-content">
+      <!-- 内容主体区域 - 仅在有内容时显示 -->
+      <div class="modal-body" *ngIf="hasContent()">
+        <ng-container #dynamicComponentContainer></ng-container>
+      </div>
+
+      <!-- 全屏模式下无内容时的填充区域 -->
+      <div class="modal-body-spacer" *ngIf="!hasContent() && isFullscreen"></div>
+
+      <!-- 底部按钮区域 -->
+      <div class="modal-footer" *ngIf="config?.nzFooter !== null">
+        <ng-container *ngIf="config?.nzFooter; else defaultFooter">
+          <ng-container *ngTemplateOutlet="config.nzFooter"></ng-container>
+        </ng-container>
+        <ng-template #defaultFooter>
+          <button
+            type="button"
+            class="btn btn-default"
+            (click)="cancel()"
+            *ngIf="config?.nzCancelText !== null"
+          >
+            {{ config?.nzCancelText || '取消' }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="confirm()"
+            *ngIf="config?.nzOkText !== null"
+          >
+            {{ config?.nzOkText || '确定' }}
+          </button>
+        </ng-template>
+      </div>
+    </div>
+
+    <!-- 调整大小的拖拽点 -->
+    <div
+      class="resize-handle resize-handle-top"
+      (mousedown)="onResizeStart($event, 'top')"
+      *ngIf="!isFullscreen && isResizable()"
+    ></div>
+    <div
+      class="resize-handle resize-handle-right"
+      (mousedown)="onResizeStart($event, 'right')"
+      *ngIf="!isFullscreen && isResizable()"
+    ></div>
+    <div
+      class="resize-handle resize-handle-bottom"
+      (mousedown)="onResizeStart($event, 'bottom')"
+      *ngIf="!isFullscreen && isResizable()"
+    ></div>
+    <div
+      class="resize-handle resize-handle-left"
+      (mousedown)="onResizeStart($event, 'left')"
+      *ngIf="!isFullscreen && isResizable()"
+    ></div>
+    <div
+      class="resize-handle resize-handle-corner-ne"
+      (mousedown)="onResizeStart($event, 'corner')"
+      *ngIf="!isFullscreen && isResizable()"
+    ></div>
+    <div
+      class="resize-handle resize-handle-corner-nw"
+      (mousedown)="onResizeStart($event, 'corner')"
+      *ngIf="!isFullscreen && isResizable()"
+    ></div>
+    <div
+      class="resize-handle resize-handle-corner-se"
+      (mousedown)="onResizeStart($event, 'corner')"
+      *ngIf="!isFullscreen && isResizable()"
+    ></div>
+    <div
+      class="resize-handle resize-handle-corner-sw"
+      (mousedown)="onResizeStart($event, 'corner')"
+      *ngIf="!isFullscreen && isResizable()"
+    ></div>
+  </div>
+</div>

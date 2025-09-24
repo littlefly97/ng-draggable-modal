@@ -1,0 +1,50 @@
+{
+  "name": "ng-draggable-modal",
+  "version": "1.0.0",
+  "description": "A powerful Angular modal library with drag, resize, and fullscreen capabilities",
+  "main": "bundles/ng-draggable-modal.umd.js",
+  "module": "fesm2015/ng-draggable-modal.js",
+  "es2015": "fesm2015/ng-draggable-modal.js",
+  "esm5": "esm5/ng-draggable-modal.js",
+  "esm2015": "esm2015/ng-draggable-modal.js",
+  "fesm5": "fesm5/ng-draggable-modal.js",
+  "fesm2015": "fesm2015/ng-draggable-modal.js",
+  "typings": "ng-draggable-modal.d.ts",
+  "scripts": {
+    "build": "ng-packagr -p ng-package.json",
+    "build:watch": "ng-packagr -p ng-package.json -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "angular",
+    "modal",
+    "draggable",
+    "resizable",
+    "fullscreen",
+    "dialog",
+    "popup",
+    "ui"
+  ],
+  "author": "littlefly",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/littlefly/ng-draggable-modal.git"
+  },
+  "homepage": "https://github.com/littlefly/ng-draggable-modal#readme",
+  "bugs": {
+    "url": "https://github.com/littlefly/ng-draggable-modal/issues"
+  },
+  "peerDependencies": {
+    "@angular/common": ">=10.0.0",
+    "@angular/core": ">=10.0.0",
+    "rxjs": ">=6.0.0"
+  },
+  "devDependencies": {
+    "@angular/common": "~10.2.3",
+    "@angular/core": "~10.2.3",
+    "ng-packagr": "^10.1.0",
+    "rxjs": "~6.6.3",
+    "typescript": "~4.0.5"
+  }
+}
