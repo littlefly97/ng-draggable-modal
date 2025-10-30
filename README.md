@@ -513,7 +513,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ### Development Setup
 
 ```bash
-git clone https://github.com/littlefly/ng-draggable-modal.git
+git clone https://github.com/littlefly97/ng-draggable-modal.git
 cd ng-draggable-modal
 npm install
 npm run build
