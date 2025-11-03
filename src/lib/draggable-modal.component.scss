@@ -129,8 +129,13 @@
     }
 
     &.close-btn:hover {
-      background: #ff4d4f;
-      color: white;
+      // background: #ff4d4f;
+      // color: white;
+
+      // SVG 需要使用 fill 属性来改变颜色
+      svg {
+        fill: #ff4d4f;
+      }
     }
 
     .icon-minimize {
